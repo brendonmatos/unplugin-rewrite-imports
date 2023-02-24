@@ -1,0 +1,24 @@
+{
+  "name": "unplugin-import-rewrite",
+  "version": "0.0.0",
+  "main": "./dist/plugin.mjs",
+  "scripts": {
+    "test": "vitest",
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^4.1.0",
+    "vite-plugin-inspect": "^0.7.15",
+    "vitest": "^0.28.4"
+  },
+  "dependencies": {
+    "magic-string": "^0.30.0",
+    "unplugin": "^1.1.0"
+  },
+  "peerDependencies": {
+    "magic-string": ">= 0.28.0",
+    "unplugin": ">= 1.0.0"
+  }
+}
