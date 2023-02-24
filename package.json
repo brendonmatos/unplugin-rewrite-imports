@@ -1,7 +1,13 @@
 {
   "name": "unplugin-rewrite-imports",
+  "description": "Unplugin to rewrite imports",
   "version": "0.0.0",
   "main": "./dist/plugin.mjs",
+  "homepage": "https://github.com/brendonmatos/unplugin-rewrite-imports",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brendonmatos/unplugin-rewrite-imports.git"
+  },
   "scripts": {
     "test": "vitest",
     "dev": "vite",
