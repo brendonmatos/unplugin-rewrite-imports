@@ -1,5 +1,5 @@
 {
-  "name": "unplugin-import-rewrite",
+  "name": "unplugin-rewrite-imports",
   "version": "0.0.0",
   "main": "./dist/plugin.mjs",
   "scripts": {
