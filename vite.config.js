@@ -10,7 +10,7 @@ export default defineConfig({
       entry: resolve(__dirname, './src/index.ts'),
       name: 'plugin',
       formats: ['es', 'cjs'],
-      fileName: 'plugin',
+      fileName: 'index',
     },
     rollupOptions: {
       external: ['vite', 'vitest', 'unplugin'],
