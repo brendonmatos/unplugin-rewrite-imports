@@ -4,7 +4,6 @@ import { ImportAnalysis } from "./ImportAnalysis";
 import { TAKE_IMPORTS_REGEX, ImportsLexer } from "./ImportsLexer";
 
 export class ImportOptimizer {
-  code: MagicString;
   constructor(public optimizeEntries: OptimizeEntry[]) {}
 
   createImportsAnalysis(code: string): ImportAnalysis {

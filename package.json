@@ -2,7 +2,9 @@
   "name": "unplugin-rewrite-imports",
   "description": "Unplugin to rewrite imports",
   "version": "0.1.0",
-  "main": "./dist/plugin.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "homepage": "https://github.com/brendonmatos/unplugin-rewrite-imports",
   "repository": {
     "type": "git",
@@ -17,6 +19,7 @@
   "type": "module",
   "devDependencies": {
     "vite": "^4.1.0",
+    "vite-plugin-dts": "^2.0.2",
     "vite-plugin-inspect": "^0.7.15",
     "vitest": "^0.28.4"
   },
