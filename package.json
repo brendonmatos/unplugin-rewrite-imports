@@ -14,7 +14,8 @@
     "test": "vitest",
     "dev": "vite",
     "build": "vite build",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "publish:minor": "git tag -a v$(npm version minor) -m \"$(git log -1 --pretty=%B)\" && git push --follow-tags && npm run build && npm publish"
   },
   "type": "module",
   "devDependencies": {
