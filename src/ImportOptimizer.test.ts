@@ -163,4 +163,15 @@ describe("ImportOptimizer", () => {
     const optimized = optimizer.optimize(testContent);
     expect(optimized.code).toMatch(`import * as x from "common"`);
   });
+
+  it("should do nothing if no rewrite", () => {
+    const testContent = `
+  import * as x from "common";
+    `;
+
+    const optimizer = new ImportOptimizer([]);
+
+    const optimized = optimizer.optimize(testContent);
+    expect(optimized.code).toMatch(`import * as x from "common"`);
+  });
 });

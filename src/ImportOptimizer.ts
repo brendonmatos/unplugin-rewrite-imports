@@ -30,21 +30,37 @@ export class ImportOptimizer {
       if (!importEntry.rewritePath) {
         // get all that does not import default
 
-        const imports = importEntry.lexedImports.filter(
-          (i) => i.importedAs !== "default"
+        const destructurerImports = importEntry.lexedImports.filter(
+          (i) => i.exportedAs !== "default" && i.exportedAs !== "*"
         );
 
-        importStrings.push(
-          `import { ${imports
-            .map((im) => {
-              if (im.importedAs === im.exportedAs) {
-                return im.importedAs;
-              }
-
-              return `${im.exportedAs} as ${im.importedAs}`;
-            })
-            .join(", ")} } from "${importEntry.moduleName}";`
+        const defaultImports = importEntry.lexedImports.filter(
+          (i) => i.exportedAs === "default" || i.exportedAs === "*"
         );
+
+        if (destructurerImports.length > 0)
+          importStrings.push(
+            `import { ${destructurerImports
+              .map((im) => {
+                if (im.importedAs === im.exportedAs) {
+                  return im.importedAs;
+                }
+
+                return `${im.exportedAs} as ${im.importedAs}`;
+              })
+              .join(", ")} } from "${importEntry.moduleName}";`
+          );
+
+        for (const defaultImport of defaultImports) {
+          const importedVariable =
+            defaultImport.importedAs === defaultImport.exportedAs
+              ? defaultImport.importedAs
+              : `${defaultImport.exportedAs} as ${defaultImport.importedAs}`;
+
+          importStrings.push(
+            `import ${importedVariable} from "${importEntry.moduleName}";`
+          );
+        }
 
         continue;
       }
