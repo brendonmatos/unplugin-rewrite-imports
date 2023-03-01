@@ -174,4 +174,17 @@ describe("ImportOptimizer", () => {
     const optimized = optimizer.optimize(testContent);
     expect(optimized.code).toMatch(`import * as x from "common"`);
   });
+
+  it("should rewrite imports with same name when there is no rewrite too", () => {
+    const testContent = `
+  import { a, b as c, e } from "common";
+  import { f } from "common";
+  import { a as g, b as h } from "utils";
+    `;
+    const optimizer = new ImportOptimizer([]);
+
+    const optimized = optimizer.optimize(testContent);
+    expect(optimized.code).toMatch(`import { a, b as c, e, f } from "common"`);
+    expect(optimized.code).toMatch(`import { a as g, b as h } from "utils"`);
+  });
 });
