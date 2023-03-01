@@ -29,4 +29,16 @@ import a from "common";
     expect(result[0].exportedAs).toBe("default");
     expect(result[0].importedAs).toBe("a");
   });
+
+  it("should work with default imports", () => {
+    const testContent = `
+import * as a from "common/a";
+`;
+
+    const result = ImportsLexer.parse(testContent);
+    expect(result).length(1);
+    expect(result[0].importTarget).toBe("common/a");
+    expect(result[0].exportedAs).toBe("*");
+    expect(result[0].importedAs).toBe("a");
+  });
 });

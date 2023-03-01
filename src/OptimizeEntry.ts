@@ -1,9 +1,13 @@
 export type OptimizeEntry = {
   moduleName: string;
-  rewrite?: string;
+  rewritePath?: string;
   imports: {
+    /**
+     * @deprecated
+     */
     exportedAs?: string;
     importedAs?: string;
-    rewrite?: string;
+    rewriteExportedAs?: string;
+    rewritePath?: string;
   }[];
 };

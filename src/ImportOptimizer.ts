@@ -27,14 +27,12 @@ export class ImportOptimizer {
       // one import statement, if there is no rewrite found for module
       // or variable.
 
-      if (!importEntry.rewrite) {
+      if (!importEntry.rewritePath) {
         // get all that does not import default
 
         const imports = importEntry.lexedImports.filter(
           (i) => i.importedAs !== "default"
         );
-
-        // TODO: test if there is only one default import
 
         importStrings.push(
           `import { ${imports
@@ -55,16 +53,38 @@ export class ImportOptimizer {
       // for each variable. Otherwise we can join all variables into
       // one import statement, if there is no rewrite found for module
       // or variable.
-
       for (const lexedImport of importEntry.lexedImports) {
-        const importModule = importEntry.rewrite.replace(
+        const importModule = importEntry.rewritePath.replace(
           "$name",
           lexedImport.exportedAs
         );
 
-        importStrings.push(
-          `import ${lexedImport.importedAs} from "${importModule}";`
+        const shouldAssumeToDefaultExportRewrite = Boolean(
+          importEntry.rewritePath
         );
+        let importedVariable = lexedImport.importedAs;
+        let exportedVariable =
+          importEntry.rewriteExportedAs || lexedImport.exportedAs;
+
+        if (["default", "*"].includes(exportedVariable)) {
+          if (exportedVariable === "default") {
+            importedVariable = lexedImport.importedAs;
+          }
+
+          if (exportedVariable === "*") {
+            importedVariable = `* as ${lexedImport.importedAs}`;
+          }
+
+          importStrings.push(
+            `import ${importedVariable} from "${importModule}";`
+          );
+          continue;
+        }
+        if (shouldAssumeToDefaultExportRewrite) {
+          importStrings.push(
+            `import ${importedVariable} from "${importModule}";`
+          );
+        }
       }
     }
 

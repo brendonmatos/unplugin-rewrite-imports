@@ -15,10 +15,8 @@ describe("ImportOptimizer", () => {
     const optimizer = new ImportOptimizer([
       {
         moduleName: "common",
-        imports: [
-          { importedAs: "d", exportedAs: "c", rewrite: "common/lib/$name" },
-        ],
-        rewrite: "common/another/$name",
+        imports: [{ importedAs: "d", rewritePath: "common/lib/$name" }],
+        rewritePath: "common/another/$name",
       },
     ]);
 
@@ -26,16 +24,16 @@ describe("ImportOptimizer", () => {
 
     expect(analysis.importEntries).toHaveLength(5);
     expect(
-      analysis.importEntries.find((i) => i.rewrite === "common/lib/$name")
-        .lexedImports
+      analysis.importEntries.find((i) => i.rewritePath === "common/lib/$name")
+        ?.lexedImports
     ).toHaveLength(1);
 
     const commonAnother = analysis.importEntries.find(
-      (i) => i.rewrite === "common/another/$name"
+      (i) => i.rewritePath === "common/another/$name"
     );
-    expect(commonAnother.lexedImports).toHaveLength(3);
+    expect(commonAnother?.lexedImports).toHaveLength(3);
     expect(
-      commonAnother.lexedImports.find((i) => i.importedAs === "c")
+      commonAnother?.lexedImports.find((i) => i.importedAs === "c")
     ).toBeUndefined();
   });
 
@@ -48,10 +46,8 @@ describe("ImportOptimizer", () => {
     const optimizer = new ImportOptimizer([
       {
         moduleName: "common",
-        imports: [
-          { exportedAs: "a", importedAs: "a", rewrite: "common/lib/$name" },
-        ],
-        rewrite: "common/another/$name",
+        imports: [{ importedAs: "a", rewritePath: "common/lib/$name" }],
+        rewritePath: "common/another/$name",
       },
     ]);
 
@@ -67,6 +63,22 @@ describe("ImportOptimizer", () => {
     expect(optimized.code).not.toMatch(`import { e } from "common"`);
   });
 
+  it("should support import rename", () => {
+    const testContent = `
+  import { b as c } from "common";
+    `;
+    const optimizer = new ImportOptimizer([
+      {
+        moduleName: "common",
+        imports: [],
+        rewritePath: "common/another/$name",
+      },
+    ]);
+
+    const optimized = optimizer.optimize(testContent);
+    expect(optimized.code).toMatch(`import c from "common/another/b"`);
+  });
+
   it("should work with simple destructuring", () => {
     const testContent = `
   import { a } from "common/lib";
@@ -77,9 +89,8 @@ describe("ImportOptimizer", () => {
         moduleName: "common/lib",
         imports: [
           {
-            exportedAs: "a",
             importedAs: "a",
-            rewrite: "common/lib/$name",
+            rewritePath: "common/lib/$name",
           },
         ],
       },
@@ -87,5 +98,69 @@ describe("ImportOptimizer", () => {
 
     const optimized = optimizer.optimize(testContent);
     expect(optimized.code).toMatch(`import a from "common/lib/a"`);
+  });
+
+  it("should work with * structuring", () => {
+    const testContent = `
+  import { x } from "common";
+    `;
+
+    const optimizer = new ImportOptimizer([
+      {
+        moduleName: "common",
+        imports: [
+          {
+            importedAs: "x",
+            rewritePath: "common/x",
+            rewriteExportedAs: "*",
+          },
+        ],
+      },
+    ]);
+
+    const optimized = optimizer.optimize(testContent);
+    expect(optimized.code).toMatch(`import * as x from "common/x"`);
+  });
+
+  it("should remove redundant rename", () => {
+    const testContent = `
+  import default as x from "common";
+    `;
+
+    const optimizer = new ImportOptimizer([
+      {
+        moduleName: "common",
+        imports: [
+          {
+            importedAs: "x",
+            rewritePath: "common/x",
+          },
+        ],
+      },
+    ]);
+
+    const optimized = optimizer.optimize(testContent);
+    expect(optimized.code).toMatch(`import x from "common/x"`);
+  });
+
+  it("should remove redundant rename", () => {
+    const testContent = `
+  import * as x from "common/x";
+    `;
+
+    const optimizer = new ImportOptimizer([
+      {
+        moduleName: "common/x",
+        imports: [
+          {
+            importedAs: "x",
+            rewritePath: "common",
+          },
+        ],
+      },
+    ]);
+
+    const optimized = optimizer.optimize(testContent);
+    expect(optimized.code).toMatch(`import * as x from "common"`);
   });
 });

@@ -1,8 +1,14 @@
+export type ImportLexed = {
+  importTarget: string;
+  importedAs: string;
+  exportedAs: string;
+};
+
 export const TAKE_IMPORTS_REGEX =
-  /import\s*(?<imports>[a-zA-Z0-9_, \{\}]+)\s*from\s*["'](?<module>.*)["'];?/g;
+  /import\s*(?<imports>[a-zA-Z0-9_,* \{\}]+)\s*from\s*["'](?<module>.*)["'];?/g;
 
 export const SEPARATE_IMPORTS_REGEX =
-  /(?<name>[a-zA-Z0-9_]+)(\s+as\s+(?<alias>[a-zA-Z0-9_]+))?/g;
+  /(?<name>[a-zA-Z0-9_*]+)(\s+as\s+(?<alias>[a-zA-Z0-9_]+))?/g;
 
 export class ImportsLexer {
   constructor() {}
@@ -13,7 +19,8 @@ export class ImportsLexer {
     while ((fullImportMatch = TAKE_IMPORTS_REGEX.exec(code))) {
       const { groups: { imports, module: moduleName } = {} } = fullImportMatch;
 
-      const isDefaultImport = !imports.trim().startsWith("{");
+      const isDefaultImport =
+        imports.trim()[0] !== "{" && imports.trim()[0] !== "*";
 
       let importMatch: RegExpExecArray | null;
       while ((importMatch = SEPARATE_IMPORTS_REGEX.exec(imports))) {
@@ -23,16 +30,9 @@ export class ImportsLexer {
           importedAs: alias || name,
           exportedAs: isDefaultImport ? "default" : name,
         };
-
         importEntries.push(importEntry);
       }
     }
     return importEntries;
   }
 }
-
-export type ImportLexed = {
-  importTarget: string;
-  importedAs: string;
-  exportedAs: string;
-};

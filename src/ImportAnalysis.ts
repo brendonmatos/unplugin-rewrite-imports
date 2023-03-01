@@ -6,7 +6,7 @@ export class ImportAnalysis {
   public importEntries: ImportEntry[] = [];
   constructor(public optimizeEntries: OptimizeEntry[]) {}
 
-  getRewrite(importLexed: ImportLexed) {
+  getRewrites(importLexed: ImportLexed) {
     const optimizeEntry = this.optimizeEntries.find(
       (i) => i.moduleName === importLexed.importTarget
     );
@@ -16,12 +16,13 @@ export class ImportAnalysis {
     }
 
     const variableSpecificMatch = optimizeEntry.imports.find(
-      (v) =>
-        v.exportedAs === importLexed.exportedAs &&
-        v.importedAs === importLexed.importedAs
+      (v) => v.importedAs === importLexed.importedAs
     );
 
-    return variableSpecificMatch?.rewrite || optimizeEntry.rewrite;
+    return {
+      path: variableSpecificMatch?.rewritePath || optimizeEntry.rewritePath,
+      importedAs: variableSpecificMatch?.rewriteExportedAs,
+    };
   }
 
   addEntry(lexedImport: ImportLexed) {
@@ -32,11 +33,12 @@ export class ImportAnalysis {
     // separate de importEntry into another entry with the same
     // rewrite for each variable
 
-    const rewrite = this.getRewrite(lexedImport);
+    const { path: rewritePath, importedAs: rewriteExportedAs } =
+      this.getRewrites(lexedImport) || {};
 
     const existingEntry = this.importEntries.find((i) => {
-      if (rewrite) {
-        return i.rewrite === rewrite;
+      if (rewritePath) {
+        return i.rewritePath === rewritePath;
       }
 
       return i.moduleName === lexedImport.importTarget;
@@ -44,7 +46,8 @@ export class ImportAnalysis {
 
     if (!existingEntry) {
       this.importEntries.push({
-        rewrite,
+        rewritePath: rewritePath,
+        rewriteExportedAs: rewriteExportedAs,
         moduleName: lexedImport.importTarget,
         lexedImports: [lexedImport],
       });
@@ -53,9 +56,7 @@ export class ImportAnalysis {
     }
 
     const existingLexedImport = existingEntry.lexedImports.find(
-      (i) =>
-        i.importedAs === lexedImport.importedAs &&
-        i.exportedAs === lexedImport.exportedAs
+      (i) => i.importedAs === lexedImport.importedAs
     );
 
     if (existingLexedImport) return;

@@ -8,9 +8,7 @@ const optimizer = new ImportOptimizer([
   {
     moduleName: "common/lib",
 
-    imports: [
-      { exportedAs: "a", importedAs: "a", rewrite: "common/lib/$name" },
-    ],
+    imports: [{ importedAs: "a", rewritePath: "common/lib/$name" }],
   },
 ]);
 
