@@ -15,7 +15,7 @@ export const optimizeImports = createUnplugin(
           return;
         }
 
-        return optimizer.optimize(code);
+        return optimizer.optimize(code, id);
       },
     };
   }

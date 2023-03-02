@@ -124,7 +124,7 @@ describe("ImportOptimizer", () => {
 
   it("should remove redundant rename", () => {
     const testContent = `
-  import default as x from "common";
+  import {default as x} from "common";
     `;
 
     const optimizer = new ImportOptimizer([
@@ -175,7 +175,7 @@ describe("ImportOptimizer", () => {
     expect(optimized.code).toMatch(`import * as x from "common"`);
   });
 
-  it("should rewrite imports with same name when there is no rewrite too", () => {
+  it("should rewrite imports with same name when there is no rewrite too 1", () => {
     const testContent = `
   import { a, b as c, e } from "common";
   import { f } from "common";
@@ -186,5 +186,15 @@ describe("ImportOptimizer", () => {
     const optimized = optimizer.optimize(testContent);
     expect(optimized.code).toMatch(`import { a, b as c, e, f } from "common"`);
     expect(optimized.code).toMatch(`import { a as g, b as h } from "utils"`);
+  });
+
+  it("should rewrite imports with same name when there is no rewrite too 2", () => {
+    const testContent = `
+  import c from "common";
+    `;
+    const optimizer = new ImportOptimizer([]);
+
+    const optimized = optimizer.optimize(testContent);
+    expect(optimized.code).toMatch(`import c from "common"`);
   });
 });

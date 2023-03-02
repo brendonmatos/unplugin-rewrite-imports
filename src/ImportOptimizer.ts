@@ -30,17 +30,17 @@ export class ImportOptimizer {
       if (!importEntry.rewritePath) {
         // get all that does not import default
 
-        const destructurerImports = importEntry.lexedImports.filter(
+        const destructurerImportsLexed = importEntry.lexedImports.filter(
           (i) => i.exportedAs !== "default" && i.exportedAs !== "*"
         );
 
-        const defaultImports = importEntry.lexedImports.filter(
+        const defaultImportsLexed = importEntry.lexedImports.filter(
           (i) => i.exportedAs === "default" || i.exportedAs === "*"
         );
 
-        if (destructurerImports.length > 0)
+        if (destructurerImportsLexed.length > 0)
           importStrings.push(
-            `import { ${destructurerImports
+            `import { ${destructurerImportsLexed
               .map((im) => {
                 if (im.importedAs === im.exportedAs) {
                   return im.importedAs;
@@ -51,11 +51,16 @@ export class ImportOptimizer {
               .join(", ")} } from "${importEntry.moduleName}";`
           );
 
-        for (const defaultImport of defaultImports) {
-          const importedVariable =
-            defaultImport.importedAs === defaultImport.exportedAs
-              ? defaultImport.importedAs
-              : `${defaultImport.exportedAs} as ${defaultImport.importedAs}`;
+        for (const defaultImportLexed of defaultImportsLexed) {
+          let importedVariable = defaultImportLexed.importedAs;
+
+          if (defaultImportLexed.exportedAs === "*") {
+            importedVariable = `* as ${defaultImportLexed.importedAs}`;
+          }
+
+          if (defaultImportLexed.exportedAs === "default") {
+            importedVariable = defaultImportLexed.importedAs;
+          }
 
           importStrings.push(
             `import ${importedVariable} from "${importEntry.moduleName}";`
@@ -107,7 +112,7 @@ export class ImportOptimizer {
     return importStrings.join("\n");
   }
 
-  optimize(code: string) {
+  optimize(code: string, id?: string) {
     const importAnalysis = this.createImportsAnalysis(code);
     const magicString = new MagicString(code);
 
@@ -125,7 +130,9 @@ export class ImportOptimizer {
 
     return {
       code: magicString.toString(),
-      map: magicString.generateMap(),
+      map: magicString.generateMap({
+        source: id,
+      }),
     };
   }
 }
