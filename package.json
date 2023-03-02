@@ -1,7 +1,7 @@
 {
   "name": "unplugin-rewrite-imports",
   "description": "Unplugin to rewrite imports",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
