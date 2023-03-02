@@ -78,7 +78,8 @@ export class ImportOptimizer {
         const shouldAssumeToDefaultExportRewrite = Boolean(
           importEntry.rewritePath
         );
-        let importedVariable = lexedImport.importedAs;
+        let importedVariable =
+          importEntry.rewriteImportedAs || lexedImport.importedAs;
         let exportedVariable =
           importEntry.rewriteExportedAs || lexedImport.exportedAs;
 

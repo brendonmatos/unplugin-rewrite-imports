@@ -12,6 +12,7 @@ export type OptimizeEntry = {
     exportedAs?: string;
     importedAs?: string;
     rewriteExportedAs?: string;
+    rewriteImportedAs?: string;
     rewritePath?: string;
   }[];
 };

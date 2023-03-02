@@ -28,7 +28,8 @@ export class ImportAnalysis {
 
     return {
       path: rewritePath?.replace("$name", importLexed.exportedAs),
-      importedAs: variableSpecificMatch?.rewriteExportedAs,
+      exportedAs: variableSpecificMatch?.rewriteExportedAs,
+      importedAs: variableSpecificMatch?.rewriteImportedAs,
     };
   }
 
@@ -41,7 +42,11 @@ export class ImportAnalysis {
     // rewrite for each variable
 
     const rewrites = this.getRewrites(lexedImport);
-    const { path: rewritePath, importedAs: rewriteExportedAs } = rewrites || {};
+    const {
+      path: rewritePath,
+      exportedAs: rewriteExportedAs,
+      importedAs: rewriteImportedAs,
+    } = rewrites || {};
 
     const existingEntry = this.importEntries.find((i) => {
       return (
@@ -54,6 +59,7 @@ export class ImportAnalysis {
       this.importEntries.push({
         rewritePath,
         rewriteExportedAs,
+        rewriteImportedAs,
         moduleName: lexedImport.importTarget,
         lexedImports: [lexedImport],
       });

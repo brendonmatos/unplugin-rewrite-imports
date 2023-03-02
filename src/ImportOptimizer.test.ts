@@ -185,4 +185,26 @@ describe("ImportOptimizer", () => {
     expect(optimized.code).toMatch(`import x from "common/x"`);
     expect(optimized.code).toMatch(`import { y } from "common"`);
   });
+  it("should work with default imports", () => {
+    const testContent = `
+  import {x} from "common";
+`;
+
+    const optimizer = new ImportOptimizer([
+      {
+        moduleName: "common",
+        imports: [
+          {
+            importedAs: "x",
+            rewritePath: "common/x",
+            rewriteImportedAs: "{ x }",
+          },
+        ],
+      },
+    ]);
+
+    const optimized = optimizer.optimize(testContent);
+
+    expect(optimized.code).toMatch(`import { x } from "common/x"`);
+  });
 });

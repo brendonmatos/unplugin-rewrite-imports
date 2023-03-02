@@ -5,4 +5,5 @@ export type ImportEntry = {
   lexedImports: ImportLexed[];
   rewritePath?: string;
   rewriteExportedAs?: string;
+  rewriteImportedAs?: string;
 };
