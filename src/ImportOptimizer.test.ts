@@ -187,7 +187,7 @@ describe("ImportOptimizer", () => {
   });
   it("should work with default imports", () => {
     const testContent = `
-  import {x} from "common";
+  import { x, y } from "common";
 `;
 
     const optimizer = new ImportOptimizer([
@@ -196,15 +196,20 @@ describe("ImportOptimizer", () => {
         imports: [
           {
             importedAs: "x",
-            rewritePath: "common/x",
+            rewritePath: "common/yay",
             rewriteImportedAs: "{ x }",
+          },
+          {
+            importedAs: "y",
+            rewritePath: "common/yay",
+            rewriteImportedAs: "{ y }",
           },
         ],
       },
     ]);
 
     const optimized = optimizer.optimize(testContent);
-
-    expect(optimized.code).toMatch(`import { x } from "common/x"`);
+    expect(optimized.code).toMatch(`import { x } from "common/yay"`);
+    expect(optimized.code).toMatch(`import { y } from "common/yay"`);
   });
 });

@@ -110,4 +110,44 @@ describe("ImportAnalysis", () => {
     expect(importAsE).toBeDefined();
     expect(importAsE?.lexedImports).toHaveLength(1);
   });
+
+  it("should work with default imports", () => {
+    //     const testContent = `
+    //   import { x, y } from "common";
+    // `;
+
+    const analysis = new ImportAnalysis([
+      {
+        moduleName: "common",
+        imports: [
+          {
+            importedAs: "x",
+            rewritePath: "common/yay",
+            rewriteImportedAs: "{ x }",
+          },
+          {
+            importedAs: "y",
+            rewritePath: "common/yay",
+            rewriteImportedAs: "{ y }",
+          },
+        ],
+      },
+    ]);
+
+    analysis.addEntry({
+      importTarget: "common",
+      importedAs: "x",
+      exportedAs: "x",
+    });
+
+    analysis.addEntry({
+      importTarget: "common",
+      importedAs: "y",
+      exportedAs: "y",
+    });
+
+    expect(analysis.importEntries).toHaveLength(2);
+    expect(analysis.importEntries[0].lexedImports).toHaveLength(1);
+    expect(analysis.importEntries[1].lexedImports).toHaveLength(1);
+  });
 });

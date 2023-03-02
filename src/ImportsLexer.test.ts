@@ -68,4 +68,28 @@ import {
     const result = ImportsLexer.parse(testContent);
     expect(result).length(2);
   });
+
+  it("should work with multiline imports", () => {
+    const testContent = `
+import React, { useState, useEffect } from "react";
+`;
+    const result = ImportsLexer.parse(testContent);
+    expect(result[0].exportedAs).toBe("default");
+    expect(result[0].importedAs).toBe("React");
+    expect(result[1].exportedAs).toBe("useState");
+    expect(result[1].importedAs).toBe("useState");
+    expect(result[2].exportedAs).toBe("useEffect");
+    expect(result[2].importedAs).toBe("useEffect");
+    expect(result).length(3);
+  });
+
+  it("should work with multiline imports", () => {
+    const testContent = `
+import x from "@x/y-z/a?b=c";
+`;
+    const result = ImportsLexer.parse(testContent);
+    expect(result[0].exportedAs).toBe("default");
+    expect(result[0].importedAs).toBe("x");
+    expect(result[0].importTarget).toBe("@x/y-z/a?b=c");
+  });
 });

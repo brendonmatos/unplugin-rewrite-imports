@@ -51,6 +51,8 @@ export class ImportAnalysis {
     const existingEntry = this.importEntries.find((i) => {
       return (
         i.rewritePath === rewritePath &&
+        i.rewriteExportedAs === rewriteExportedAs &&
+        i.rewriteImportedAs === rewriteImportedAs &&
         i.moduleName === lexedImport.importTarget
       );
     });
