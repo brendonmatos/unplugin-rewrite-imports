@@ -5,7 +5,7 @@ export type ImportLexed = {
 };
 
 export const TAKE_IMPORTS_REGEX =
-  /import\s*(?<imports>[a-zA-Z0-9_,* \{\}]+)\s*from\s*["'](?<module>.*)["'];?/g;
+  /import\s*(?<imports>[a-zA-Z0-9_,* \s\{\}]+)\s*from\s*["'](?<module>.*)["'];?/g;
 
 export const REMOVE_ALL_COMMENTS_REGEX = /\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm;
 

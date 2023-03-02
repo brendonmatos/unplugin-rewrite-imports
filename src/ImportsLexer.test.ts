@@ -57,4 +57,15 @@ import {y} from "common";
     const result = ImportsLexer.parse(testContent);
     expect(result).length(2);
   });
+
+  it("should work with multiline imports", () => {
+    const testContent = `
+import {
+  a,
+  b,
+  } from "common";
+`;
+    const result = ImportsLexer.parse(testContent);
+    expect(result).length(2);
+  });
 });
