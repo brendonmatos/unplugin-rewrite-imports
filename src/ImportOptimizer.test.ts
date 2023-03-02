@@ -4,41 +4,6 @@ import { describe, it, expect } from "vitest";
 describe("ImportOptimizer", () => {
   it("should work", () => {
     const testContent = `
-  import { a, b, c as d, e } from "common";
-  import f from 'common/lib/f';
-  import { a } from "common";
-  import { e } from "common";
-  import { a as e, b as d } from "utils";
-  import { g } from "do-nothing";
-  `;
-
-    const optimizer = new ImportOptimizer([
-      {
-        moduleName: "common",
-        imports: [{ importedAs: "d", rewritePath: "common/lib/$name" }],
-        rewritePath: "common/another/$name",
-      },
-    ]);
-
-    const analysis = optimizer.createImportsAnalysis(testContent);
-
-    expect(analysis.importEntries).toHaveLength(5);
-    expect(
-      analysis.importEntries.find((i) => i.rewritePath === "common/lib/$name")
-        ?.lexedImports
-    ).toHaveLength(1);
-
-    const commonAnother = analysis.importEntries.find(
-      (i) => i.rewritePath === "common/another/$name"
-    );
-    expect(commonAnother?.lexedImports).toHaveLength(3);
-    expect(
-      commonAnother?.lexedImports.find((i) => i.importedAs === "c")
-    ).toBeUndefined();
-  });
-
-  it("should work", () => {
-    const testContent = `
   import { a, b as c, e } from "common";
   import { f } from "common";
   import { a as g, b as h } from "utils";
@@ -196,5 +161,28 @@ describe("ImportOptimizer", () => {
 
     const optimized = optimizer.optimize(testContent);
     expect(optimized.code).toMatch(`import c from "common"`);
+  });
+
+  it("should work with default imports", () => {
+    const testContent = `
+  import {x, y} from "common";
+`;
+
+    const optimizer = new ImportOptimizer([
+      {
+        moduleName: "common",
+        rewritePath: "common/$name",
+        strict: true,
+        imports: [
+          {
+            importedAs: "x",
+          },
+        ],
+      },
+    ]);
+
+    const optimized = optimizer.optimize(testContent);
+    expect(optimized.code).toMatch(`import x from "common/x"`);
+    expect(optimized.code).toMatch(`import { y } from "common"`);
   });
 });

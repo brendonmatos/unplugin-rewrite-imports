@@ -7,6 +7,8 @@ export type ImportLexed = {
 export const TAKE_IMPORTS_REGEX =
   /import\s*(?<imports>[a-zA-Z0-9_,* \{\}]+)\s*from\s*["'](?<module>.*)["'];?/g;
 
+export const REMOVE_ALL_COMMENTS_REGEX = /\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm;
+
 export const SEPARATE_IMPORTS_REGEX =
   /(?<name>[a-zA-Z0-9_*]+)(\s+as\s+(?<alias>[a-zA-Z0-9_]+))?/g;
 
@@ -16,7 +18,10 @@ export class ImportsLexer {
   static parse(code: string) {
     let fullImportMatch: RegExpExecArray | null;
     const importEntries: ImportLexed[] = [];
-    while ((fullImportMatch = TAKE_IMPORTS_REGEX.exec(code))) {
+
+    const codeWithoutComments = code.replace(REMOVE_ALL_COMMENTS_REGEX, "");
+
+    while ((fullImportMatch = TAKE_IMPORTS_REGEX.exec(codeWithoutComments))) {
       const { groups: { imports, module: moduleName } = {} } = fullImportMatch;
 
       const isDefaultImport =

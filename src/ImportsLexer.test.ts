@@ -41,4 +41,20 @@ import * as a from "common/a";
     expect(result[0].exportedAs).toBe("*");
     expect(result[0].importedAs).toBe("a");
   });
+
+  it("should work with default imports", () => {
+    const testContent = `
+// import { a, b, c as d, e } from "common";
+import x from "common";
+/**
+ * import { a, b, c as d, e } from "common";
+ * import x from "common";
+ * import * as a from "common/a";
+ */
+import {y} from "common";
+`;
+
+    const result = ImportsLexer.parse(testContent);
+    expect(result).length(2);
+  });
 });

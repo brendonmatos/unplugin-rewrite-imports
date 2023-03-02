@@ -29,7 +29,6 @@ export class ImportOptimizer {
 
       if (!importEntry.rewritePath) {
         // get all that does not import default
-
         const destructurerImportsLexed = importEntry.lexedImports.filter(
           (i) => i.exportedAs !== "default" && i.exportedAs !== "*"
         );
@@ -38,7 +37,7 @@ export class ImportOptimizer {
           (i) => i.exportedAs === "default" || i.exportedAs === "*"
         );
 
-        if (destructurerImportsLexed.length > 0)
+        if (destructurerImportsLexed.length > 0) {
           importStrings.push(
             `import { ${destructurerImportsLexed
               .map((im) => {
@@ -50,6 +49,7 @@ export class ImportOptimizer {
               })
               .join(", ")} } from "${importEntry.moduleName}";`
           );
+        }
 
         for (const defaultImportLexed of defaultImportsLexed) {
           let importedVariable = defaultImportLexed.importedAs;
@@ -75,11 +75,6 @@ export class ImportOptimizer {
       // one import statement, if there is no rewrite found for module
       // or variable.
       for (const lexedImport of importEntry.lexedImports) {
-        const importModule = importEntry.rewritePath.replace(
-          "$name",
-          lexedImport.exportedAs
-        );
-
         const shouldAssumeToDefaultExportRewrite = Boolean(
           importEntry.rewritePath
         );
@@ -97,13 +92,13 @@ export class ImportOptimizer {
           }
 
           importStrings.push(
-            `import ${importedVariable} from "${importModule}";`
+            `import ${importedVariable} from "${importEntry.rewritePath}";`
           );
           continue;
         }
         if (shouldAssumeToDefaultExportRewrite) {
           importStrings.push(
-            `import ${importedVariable} from "${importModule}";`
+            `import ${importedVariable} from "${importEntry.rewritePath}";`
           );
         }
       }

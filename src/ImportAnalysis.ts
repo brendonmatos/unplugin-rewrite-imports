@@ -12,15 +12,22 @@ export class ImportAnalysis {
     );
 
     if (!optimizeEntry) {
-      return undefined;
+      return;
     }
 
     const variableSpecificMatch = optimizeEntry.imports.find(
       (v) => v.importedAs === importLexed.importedAs
     );
 
+    if (optimizeEntry.strict && !variableSpecificMatch) {
+      return;
+    }
+
+    const rewritePath =
+      variableSpecificMatch?.rewritePath || optimizeEntry.rewritePath;
+
     return {
-      path: variableSpecificMatch?.rewritePath || optimizeEntry.rewritePath,
+      path: rewritePath?.replace("$name", importLexed.exportedAs),
       importedAs: variableSpecificMatch?.rewriteExportedAs,
     };
   }
@@ -33,33 +40,37 @@ export class ImportAnalysis {
     // separate de importEntry into another entry with the same
     // rewrite for each variable
 
-    const { path: rewritePath, importedAs: rewriteExportedAs } =
-      this.getRewrites(lexedImport) || {};
+    const rewrites = this.getRewrites(lexedImport);
+    const { path: rewritePath, importedAs: rewriteExportedAs } = rewrites || {};
 
     const existingEntry = this.importEntries.find((i) => {
-      if (rewritePath) {
-        return i.rewritePath === rewritePath;
-      }
-
-      return i.moduleName === lexedImport.importTarget;
+      return (
+        i.rewritePath === rewritePath &&
+        i.moduleName === lexedImport.importTarget
+      );
     });
 
     if (!existingEntry) {
       this.importEntries.push({
-        rewritePath: rewritePath,
-        rewriteExportedAs: rewriteExportedAs,
+        rewritePath,
+        rewriteExportedAs,
         moduleName: lexedImport.importTarget,
         lexedImports: [lexedImport],
       });
-
       return;
     }
 
-    const existingLexedImport = existingEntry.lexedImports.find(
-      (i) => i.importedAs === lexedImport.importedAs
-    );
+    const existingLexedImport = existingEntry.lexedImports.find((i) => {
+      return (
+        i.importedAs === lexedImport.importedAs &&
+        i.exportedAs === lexedImport.exportedAs &&
+        i.importTarget === lexedImport.importTarget
+      );
+    });
 
-    if (existingLexedImport) return;
+    if (existingLexedImport) {
+      return;
+    }
 
     existingEntry.lexedImports.push(lexedImport);
   }
