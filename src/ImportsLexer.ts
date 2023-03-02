@@ -5,7 +5,7 @@ export type ImportLexed = {
 };
 
 export const TAKE_IMPORTS_REGEX =
-  /import\s*(?<imports>[a-zA-Z0-9_,* \s\{\}]+)\s*from\s*["'](?<module>.*)["'];?/g;
+  /import\s*((?<defaultImport>(?<hasImportStar>\*\s*as\s*)?(?<defaultImportName>[a-zA-Z0-9]+))?\s*(,?\s*\{(?<namedImports>[\sa-zA-Z,]+)})?\s*from\s*)?"(?<modulePath>[a-zA-Z0-9\@\-_\/\?\=]+)"/gm;
 
 export const REMOVE_ALL_COMMENTS_REGEX = /\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm;
 
@@ -22,18 +22,38 @@ export class ImportsLexer {
     const codeWithoutComments = code.replace(REMOVE_ALL_COMMENTS_REGEX, "");
 
     while ((fullImportMatch = TAKE_IMPORTS_REGEX.exec(codeWithoutComments))) {
-      const { groups: { imports, module: moduleName } = {} } = fullImportMatch;
+      const {
+        groups: {
+          defaultImport,
+          namedImports,
+          modulePath,
+          hasImportStar,
+          defaultImportName,
+        } = {},
+      } = fullImportMatch;
 
-      const isDefaultImport =
-        imports.trim()[0] !== "{" && imports.trim()[0] !== "*";
+      if (defaultImport) {
+        const importEntry: ImportLexed = {
+          importTarget: modulePath,
+          importedAs: defaultImportName,
+          exportedAs: hasImportStar ? "*" : "default",
+        };
+        importEntries.push(importEntry);
+      }
 
       let importMatch: RegExpExecArray | null;
-      while ((importMatch = SEPARATE_IMPORTS_REGEX.exec(imports))) {
+
+      if (!namedImports) {
+        continue;
+      }
+
+      while ((importMatch = SEPARATE_IMPORTS_REGEX.exec(namedImports))) {
         const { name, alias } = importMatch.groups || {};
+
         const importEntry: ImportLexed = {
-          importTarget: moduleName,
+          importTarget: modulePath,
           importedAs: alias || name,
-          exportedAs: isDefaultImport ? "default" : name,
+          exportedAs: name,
         };
         importEntries.push(importEntry);
       }
