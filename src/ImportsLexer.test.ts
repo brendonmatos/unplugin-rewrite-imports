@@ -92,4 +92,21 @@ import x from "@x/y-z/a?b=c";
     expect(result[0].importedAs).toBe("x");
     expect(result[0].importTarget).toBe("@x/y-z/a?b=c");
   });
+
+  it("should work with multiline imports", () => {
+    const testContent = `
+import {x, y,
+z, h,   k,  x as i8,
+j } from "@x/y-z/a?b=c";
+`;
+    const result = ImportsLexer.parse(testContent);
+    expect(result[0].exportedAs).toBe("x");
+    expect(result[1].exportedAs).toBe("y");
+    expect(result[2].exportedAs).toBe("z");
+    expect(result[3].exportedAs).toBe("h");
+    expect(result[4].exportedAs).toBe("k");
+    expect(result[5].importedAs).toBe("i8");
+    expect(result[6].exportedAs).toBe("j");
+    expect(result[0].importTarget).toBe("@x/y-z/a?b=c");
+  });
 });

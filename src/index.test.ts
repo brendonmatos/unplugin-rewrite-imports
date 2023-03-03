@@ -12,7 +12,7 @@ it("should ingore when the is ignore defined", () => {
 
   // @ts-ignore
   expect(p.transform("import { a } from 'a'", "a.ts").code.trim()).toBe(
-    "import { a } from 'a'"
+    'import { a } from "a";'
   );
 
   expect(

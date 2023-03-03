@@ -5,7 +5,7 @@ export type ImportLexed = {
 };
 
 export const TAKE_IMPORTS_REGEX =
-  /import\s*((?<defaultImport>(?<hasImportStar>\*\s*as\s*)?(?<defaultImportName>[a-zA-Z0-9]+))?\s*(,?\s*\{(?<namedImports>[\sa-zA-Z,]+)})?\s*from\s*)?"(?<modulePath>[a-zA-Z0-9\@\-_\/\?\=]+)"/gm;
+  /import\s*((?<defaultImport>(?<hasImportStar>\*\s*as\s*)?(?<defaultImportName>[a-zA-Z0-9_]+))?\s*(,?\s*\{(?<namedImports>[\sa-zA-Z0-9_,]+)})?\s*from\s*)?["'](?<modulePath>[a-zA-Z0-9\@\-_\/\?\=]+)["']/gm;
 
 export const REMOVE_ALL_COMMENTS_REGEX = /\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm;
 
