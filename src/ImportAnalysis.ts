@@ -4,12 +4,55 @@ import { ImportLexed } from "./ImportsLexer";
 
 export class ImportAnalysis {
   public importEntries: ImportEntry[] = [];
-  constructor(public optimizeEntries: OptimizeEntry[]) {}
+  public optimizeEntriesConfig: Map<string, OptimizeEntry> = new Map();
+  constructor(public optimizeEntries: OptimizeEntry[]) {
+    for (const entry of optimizeEntries) {
+      if (!entry.strict) {
+        const key = this.optimizeEntryKey(entry.moduleName, "*");
+        if (this.optimizeEntriesConfig.has(key)) {
+          throw new Error(
+            `Optimize entry for ${key} already exists. Please check your configuration.`
+          );
+        }
+
+        this.optimizeEntriesConfig.set(key, entry);
+      }
+
+      for (const importEntry of entry.imports) {
+        // @ts-ignore
+        const importedAs = importEntry.importedAs;
+
+        if (!importedAs) {
+          throw new Error(
+            `Optimize entry for ${entry.moduleName} has an import without an importedAs. Please check your configuration.`
+          );
+        }
+
+        const key = this.optimizeEntryKey(entry.moduleName, importedAs);
+
+        if (this.optimizeEntriesConfig.has(key)) {
+          throw new Error(
+            `Optimize entry for ${key} already exists. Please check your configuration.`
+          );
+        }
+
+        this.optimizeEntriesConfig.set(key, entry);
+      }
+    }
+  }
+
+  optimizeEntryKey(target: string, importedAs: string) {
+    return `${target}::${importedAs}`;
+  }
 
   getRewrites(importLexed: ImportLexed) {
-    const optimizeEntry = this.optimizeEntries.find(
-      (i) => i.moduleName === importLexed.importTarget
-    );
+    const optimizeEntry =
+      this.optimizeEntriesConfig.get(
+        this.optimizeEntryKey(importLexed.importTarget, importLexed.importedAs)
+      ) ||
+      this.optimizeEntriesConfig.get(
+        this.optimizeEntryKey(importLexed.importTarget, "*")
+      );
 
     if (!optimizeEntry) {
       return;
@@ -18,10 +61,6 @@ export class ImportAnalysis {
     const variableSpecificMatch = optimizeEntry.imports.find(
       (v) => v.importedAs === importLexed.importedAs
     );
-
-    if (optimizeEntry.strict && !variableSpecificMatch) {
-      return;
-    }
 
     const rewritePath =
       variableSpecificMatch?.rewritePath || optimizeEntry.rewritePath;

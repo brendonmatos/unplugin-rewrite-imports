@@ -150,4 +150,61 @@ describe("ImportAnalysis", () => {
     expect(analysis.importEntries[0].lexedImports).toHaveLength(1);
     expect(analysis.importEntries[1].lexedImports).toHaveLength(1);
   });
+
+  it("should work with default imports", () => {
+    //     const testContent = `
+    //   import { x, y } from "common";
+    // `;
+
+    const analysis = new ImportAnalysis([
+      {
+        moduleName: "lodash",
+        rewritePath: "lodash-es/$name",
+        imports: [
+          {
+            importedAs: "map",
+          },
+          {
+            importedAs: "debounce",
+          },
+        ],
+      },
+      {
+        moduleName: "lodash-es",
+        rewritePath: "lodash-es/$name",
+        imports: [
+          {
+            importedAs: "map",
+          },
+          {
+            importedAs: "debounce",
+          },
+        ],
+      },
+    ]);
+
+    analysis.addEntry({
+      importTarget: "lodash",
+      importedAs: "map",
+      exportedAs: "map",
+    });
+
+    analysis.addEntry({
+      importTarget: "lodash",
+      importedAs: "debounce",
+      exportedAs: "debounce",
+    });
+
+    analysis.addEntry({
+      importTarget: "lodash-es",
+      importedAs: "map",
+      exportedAs: "map",
+    });
+
+    analysis.addEntry({
+      importTarget: "lodash-es",
+      importedAs: "debounce",
+      exportedAs: "debounce",
+    });
+  });
 });
