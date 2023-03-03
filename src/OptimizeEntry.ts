@@ -5,6 +5,8 @@ export type OptimizeEntry = {
    * @default false
    */
   strict?: boolean;
+  warnOnMissing?: boolean;
+  errorOnMissing?: boolean;
   imports: {
     /**
      * @deprecated

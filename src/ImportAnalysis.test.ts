@@ -207,4 +207,34 @@ describe("ImportAnalysis", () => {
       exportedAs: "debounce",
     });
   });
+
+  it("should throw error when is configured to it", () => {
+    const analysis = new ImportAnalysis([
+      {
+        moduleName: "lodash",
+        errorOnMissing: true,
+        imports: [
+          {
+            importedAs: "map",
+          },
+          {
+            importedAs: "debounce",
+          },
+        ],
+      },
+    ]);
+
+    analysis.addEntry({
+      importTarget: "lodash",
+      importedAs: "map",
+      exportedAs: "map",
+    });
+    expect(() =>
+      analysis.addEntry({
+        importTarget: "lodash",
+        importedAs: "deepClone",
+        exportedAs: "deepClone",
+      })
+    ).toThrowError();
+  });
 });

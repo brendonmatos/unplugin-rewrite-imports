@@ -62,6 +62,18 @@ export class ImportAnalysis {
       (v) => v.importedAs === importLexed.importedAs
     );
 
+    if (!variableSpecificMatch) {
+      const message = `Could not find a variable specific match for ${importLexed.importedAs} in ${importLexed.importTarget}`;
+
+      if (optimizeEntry.warnOnMissing) {
+        console.warn(message);
+      }
+
+      if (optimizeEntry.errorOnMissing) {
+        throw new Error(message);
+      }
+    }
+
     const rewritePath =
       variableSpecificMatch?.rewritePath || optimizeEntry.rewritePath;
 
