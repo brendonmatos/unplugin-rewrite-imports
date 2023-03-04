@@ -15,9 +15,10 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "publish:patch": "npm version patch && git push --follow-tags && npm run build && npm publish",
-    "publish:minor": "npm version minor && git push --follow-tags && npm run build && npm publish",
-    "publish:major": "npm version major && git push --follow-tags && npm run build && npm publish"
+    "publish-version": "git push --follow-tags && npm run build && npm publish",
+    "publish:patch": "npm version patch && npm run publish-version",
+    "publish:minor": "npm version minor && npm run publish-version",
+    "publish:major": "npm version major && npm run publish-version"
   },
   "type": "module",
   "devDependencies": {
