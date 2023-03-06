@@ -237,4 +237,81 @@ describe("ImportAnalysis", () => {
       })
     ).toThrowError();
   });
+
+  it("should throw error when is configured to it", () => {
+    const analysis = new ImportAnalysis([
+      {
+        moduleName: "lodash",
+        errorOnMissing: true,
+        imports: [
+          {
+            importedAs: "map",
+          },
+          {
+            importedAs: "debounce",
+          },
+        ],
+      },
+    ]);
+
+    analysis.addEntry({
+      importTarget: "lodash",
+      importedAs: "map",
+      exportedAs: "map",
+    });
+    expect(() =>
+      analysis.addEntry({
+        importTarget: "lodash",
+        importedAs: "deepClone",
+        exportedAs: "deepClone",
+      })
+    ).toThrowError();
+  });
+
+  it("should throw error when is configured to it 2", () => {
+    const analysis = new ImportAnalysis([
+      {
+        moduleName: "lodash",
+        rewritePath: "lodash-es/$name",
+        errorOnMissing: true,
+        imports: [
+          {
+            importedAs: "map",
+          },
+          {
+            importedAs: "debounce",
+          },
+        ],
+      },
+      {
+        moduleName: "lodash",
+        rewritePath: "lodash-es-2/$name",
+        errorOnMissing: true,
+        imports: [
+          {
+            importedAs: "cloneDeep",
+          },
+          {
+            importedAs: "keyBy",
+          },
+        ],
+      },
+    ]);
+
+    expect(() =>
+      analysis.addEntry({
+        importTarget: "lodash",
+        importedAs: "map",
+        exportedAs: "map",
+      })
+    ).not.toThrowError();
+
+    expect(() =>
+      analysis.addEntry({
+        importTarget: "lodash",
+        importedAs: "concat",
+        exportedAs: "concat",
+      })
+    ).toThrowError();
+  });
 });

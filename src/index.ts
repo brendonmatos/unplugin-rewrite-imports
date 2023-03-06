@@ -5,10 +5,15 @@ import { OptimizeEntry } from "./OptimizeEntry";
 export const optimizeImports = createUnplugin(
   (options: {
     optimize: OptimizeEntry[];
+    riskyDependencies?: string[];
     ignorePaths?: (RegExp | string)[];
   }) => {
-    const { optimize, ignorePaths = [/node_modules/] } = options;
-    const optimizer = new ImportOptimizer(optimize);
+    const {
+      optimize,
+      ignorePaths = [/node_modules/],
+      riskyDependencies = [],
+    } = options;
+    const optimizer = new ImportOptimizer(optimize, riskyDependencies);
 
     return {
       name: "optimize-imports",

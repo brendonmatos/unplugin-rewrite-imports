@@ -5,23 +5,33 @@ import { ImportLexed } from "./ImportsLexer";
 export class ImportAnalysis {
   public importEntries: ImportEntry[] = [];
   public optimizeEntriesConfig: Map<string, OptimizeEntry> = new Map();
-  constructor(public optimizeEntries: OptimizeEntry[]) {
-    for (const entry of optimizeEntries) {
+  constructor(
+    public optimizeEntries: OptimizeEntry[],
+    public riskyDependencies: string[] = []
+  ) {
+    // pass all the inheritable config to the imports
+    // so that we can merge the entries
+    for (const entry of this.optimizeEntries) {
+      for (const importEntry of entry.imports) {
+        importEntry.rewritePath = importEntry.rewritePath || entry.rewritePath;
+      }
+    }
+
+    for (const entry of this.optimizeEntries) {
       if (!entry.strict) {
         const key = this.optimizeEntryKey(entry.moduleName, "*");
-        if (this.optimizeEntriesConfig.has(key)) {
-          throw new Error(
-            `Optimize entry for ${key} already exists. Please check your configuration.`
-          );
+
+        const existingEntry = this.optimizeEntriesConfig.get(key);
+        if (existingEntry) {
+          existingEntry.imports.push(...entry.imports);
+          continue;
         }
 
         this.optimizeEntriesConfig.set(key, entry);
       }
 
       for (const importEntry of entry.imports) {
-        // @ts-ignore
         const importedAs = importEntry.importedAs;
-
         if (!importedAs) {
           throw new Error(
             `Optimize entry for ${entry.moduleName} has an import without an importedAs. Please check your configuration.`
@@ -29,7 +39,6 @@ export class ImportAnalysis {
         }
 
         const key = this.optimizeEntryKey(entry.moduleName, importedAs);
-
         if (this.optimizeEntriesConfig.has(key)) {
           throw new Error(
             `Optimize entry for ${key} already exists. Please check your configuration.`
@@ -71,6 +80,12 @@ export class ImportAnalysis {
 
       if (optimizeEntry.errorOnMissing) {
         throw new Error(message);
+      }
+
+      if (this.riskyDependencies.includes(importLexed.importTarget)) {
+        throw new Error(
+          `Could not find a variable specific match for ${importLexed.importedAs} in ${importLexed.importTarget}. This dependency is marked as risky.`
+        );
       }
     }
 

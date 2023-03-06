@@ -5,7 +5,15 @@ export type OptimizeEntry = {
    * @default false
    */
   strict?: boolean;
+
+  /**
+   * @deprecated
+   */
   warnOnMissing?: boolean;
+
+  /**
+   * @deprecated
+   */
   errorOnMissing?: boolean;
   imports: {
     /**

@@ -5,10 +5,16 @@ import { TAKE_IMPORTS_REGEX, ImportsLexer } from "./ImportsLexer";
 import { ImportsWritter } from "./ImportsWritter";
 
 export class ImportOptimizer {
-  constructor(public optimizeEntries: OptimizeEntry[]) {}
+  constructor(
+    public optimizeEntries: OptimizeEntry[],
+    public riskyDependencies: string[] = []
+  ) {}
 
   createImportsAnalysis(code: string): ImportAnalysis {
-    const analysis = new ImportAnalysis(this.optimizeEntries);
+    const analysis = new ImportAnalysis(
+      this.optimizeEntries,
+      this.riskyDependencies
+    );
     const foundImports = ImportsLexer.parse(code);
 
     for (const foundImport of foundImports) {
@@ -32,7 +38,9 @@ export class ImportOptimizer {
     // Create import strings
     const importsString = ImportsWritter.writeFromAnalysis(importAnalysis);
 
-    magicString.prependLeft(0, importsString + "\n");
+    if (importsString.trim().length > 0) {
+      magicString.prependLeft(0, importsString + "\n");
+    }
 
     return {
       code: magicString.toString(),
