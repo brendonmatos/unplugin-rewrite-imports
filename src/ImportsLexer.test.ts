@@ -109,4 +109,14 @@ j } from "@x/y-z/a?b=c";
     expect(result[6].exportedAs).toBe("j");
     expect(result[0].importTarget).toBe("@x/y-z/a?b=c");
   });
+
+  it("should work with multiline imports", () => {
+    const testContent = `
+import "@x/y/z";
+`;
+    const result = ImportsLexer.parse(testContent);
+    expect(result[0].exportedAs).toBeUndefined();
+    expect(result[0].importedAs).toBeUndefined();
+    expect(result[0].importTarget).toBe("@x/y/z");
+  });
 });

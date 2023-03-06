@@ -54,14 +54,22 @@ export class ImportAnalysis {
     return `${target}::${importedAs}`;
   }
 
-  getRewrites(importLexed: ImportLexed) {
-    const optimizeEntry =
+  optimizeEntryByFromLexedImport(lexedImport: ImportLexed) {
+    return (
       this.optimizeEntriesConfig.get(
-        this.optimizeEntryKey(importLexed.importTarget, importLexed.importedAs)
+        this.optimizeEntryKey(
+          lexedImport.importTarget,
+          lexedImport.importedAs || "*"
+        )
       ) ||
       this.optimizeEntriesConfig.get(
-        this.optimizeEntryKey(importLexed.importTarget, "*")
-      );
+        this.optimizeEntryKey(lexedImport.importTarget, "*")
+      )
+    );
+  }
+
+  getRewrites(importLexed: ImportLexed) {
+    const optimizeEntry = this.optimizeEntryByFromLexedImport(importLexed);
 
     if (!optimizeEntry) {
       return;
@@ -93,7 +101,7 @@ export class ImportAnalysis {
       variableSpecificMatch?.rewritePath || optimizeEntry.rewritePath;
 
     return {
-      path: rewritePath?.replace("$name", importLexed.exportedAs),
+      path: rewritePath?.replace("$name", importLexed.exportedAs || ""),
       exportedAs: variableSpecificMatch?.rewriteExportedAs,
       importedAs: variableSpecificMatch?.rewriteImportedAs,
     };

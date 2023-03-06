@@ -1,7 +1,7 @@
 export type ImportLexed = {
   importTarget: string;
-  importedAs: string;
-  exportedAs: string;
+  importedAs?: string;
+  exportedAs?: string;
 };
 
 export const TAKE_IMPORTS_REGEX =
@@ -44,6 +44,13 @@ export class ImportsLexer {
       let importMatch: RegExpExecArray | null;
 
       if (!namedImports) {
+        if (!defaultImport) {
+          const importEntry: ImportLexed = {
+            importTarget: modulePath,
+          };
+          importEntries.push(importEntry);
+        }
+
         continue;
       }
 

@@ -109,3 +109,15 @@ it("should work", () => {
     `import ComponentD from "common/src/molecules/ComponentD";`
   );
 });
+
+it("should not ignore empty name imports", () => {
+  const analysis = new ImportAnalysis([]);
+
+  analysis.addEntry({
+    importTarget: "common",
+  });
+
+  const importsString = ImportsWritter.writeFromAnalysis(analysis);
+
+  expect(importsString).toMatch(`import "common";`);
+});

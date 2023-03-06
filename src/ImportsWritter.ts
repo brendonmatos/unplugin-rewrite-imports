@@ -14,11 +14,18 @@ export class ImportsWritter {
       if (!importEntry.rewritePath) {
         // get all that does not import default
         const destructurerImportsLexed = importEntry.lexedImports.filter(
-          (i) => i.exportedAs !== "default" && i.exportedAs !== "*"
+          (i) =>
+            i.exportedAs && i.exportedAs !== "default" && i.exportedAs !== "*"
         );
 
         const defaultImportsLexed = importEntry.lexedImports.filter(
           (i) => i.exportedAs === "default" || i.exportedAs === "*"
+        );
+
+        const otherImportsLexed = importEntry.lexedImports.filter(
+          (i) =>
+            !destructurerImportsLexed.includes(i) &&
+            !defaultImportsLexed.includes(i)
         );
 
         if (destructurerImportsLexed.length > 0) {
@@ -53,7 +60,9 @@ export class ImportsWritter {
           );
         }
 
-        continue;
+        for (const otherImportLexed of otherImportsLexed) {
+          importStrings.push(`import "${importEntry.moduleName}";`);
+        }
       }
 
       // If there is a rewrite, we need to create imports separately
@@ -69,7 +78,7 @@ export class ImportsWritter {
         let exportedVariable =
           importEntry.rewriteExportedAs || lexedImport.exportedAs;
 
-        if (["default", "*"].includes(exportedVariable)) {
+        if (exportedVariable && ["default", "*"].includes(exportedVariable)) {
           if (exportedVariable === "default") {
             importedVariable = lexedImport.importedAs;
           }
@@ -87,6 +96,12 @@ export class ImportsWritter {
           importStrings.push(
             `import ${importedVariable} from "${importEntry.rewritePath}";`
           );
+          continue;
+        }
+
+        if (!importedVariable && !exportedVariable) {
+          importStrings.push(`import "${importEntry.rewritePath}";`);
+          continue;
         }
       }
     }
