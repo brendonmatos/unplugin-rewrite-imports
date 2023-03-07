@@ -117,7 +117,13 @@ it("should not ignore empty name imports", () => {
     importTarget: "common",
   });
 
+  analysis.addEntry({
+    importTarget: "utils",
+    exportedAs: "default",
+    importedAs: "utils",
+  });
+
   const importsString = ImportsWritter.writeFromAnalysis(analysis);
 
-  expect(importsString).toMatch(`import "common";`);
+  expect(importsString).toBe(`import "common";\nimport utils from "utils";`);
 });

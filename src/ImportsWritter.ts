@@ -1,6 +1,58 @@
 import { ImportAnalysis } from "./ImportAnalysis";
 
 export class ImportsWritter {
+  static createImportLine(importSettings: {
+    defaultImportName?: string;
+    starImport?: boolean;
+    destructuredImports?: { variableName: string; aliasName?: string }[];
+    importTarget: string;
+    withSemicolon?: boolean;
+  }) {
+    const { withSemicolon = true } = importSettings;
+
+    const importedContents = [];
+
+    if (importSettings.defaultImportName) {
+      if (importSettings.starImport) {
+        importedContents.push(`* as ${importSettings.defaultImportName}`);
+      } else {
+        importedContents.push(importSettings.defaultImportName);
+      }
+    }
+
+    if (importSettings.destructuredImports) {
+      if (importSettings.defaultImportName) {
+        importedContents.push(",");
+      }
+
+      importedContents.push("{");
+      const namedImports = [];
+      for (const destructuredImport of importSettings.destructuredImports) {
+        if (
+          destructuredImport.aliasName &&
+          destructuredImport.aliasName !== destructuredImport.variableName
+        ) {
+          namedImports.push(
+            `${destructuredImport.variableName} as ${destructuredImport.aliasName}`
+          );
+        } else {
+          namedImports.push(destructuredImport.variableName);
+        }
+      }
+      importedContents.push(namedImports.join(", "), "}");
+    }
+
+    const postfix = withSemicolon ? ";" : "";
+
+    if (importedContents.length === 0) {
+      return `import "${importSettings.importTarget}"${postfix}`;
+    }
+
+    return `import ${importedContents.join(" ")} from "${
+      importSettings.importTarget
+    }"${postfix}`;
+  }
+
   static writeFromAnalysis(importAnalysis: ImportAnalysis): string {
     const importStrings: string[] = [];
 
@@ -30,39 +82,35 @@ export class ImportsWritter {
 
         if (destructurerImportsLexed.length > 0) {
           importStrings.push(
-            // TODO: Move this to a separate function
-            // and add tests for it
-            `import { ${destructurerImportsLexed
-              .map((im) => {
-                if (im.importedAs === im.exportedAs) {
-                  return im.importedAs;
-                }
-
-                return `${im.exportedAs} as ${im.importedAs}`;
-              })
-              .join(", ")} } from "${importEntry.moduleName}";`
+            ImportsWritter.createImportLine({
+              importTarget: importEntry.moduleName,
+              destructuredImports: destructurerImportsLexed.map((im) => ({
+                variableName: im.exportedAs!,
+                aliasName: im.importedAs,
+              })),
+            })
           );
         }
 
         for (const defaultImportLexed of defaultImportsLexed) {
-          let importedVariable = defaultImportLexed.importedAs;
-
-          if (defaultImportLexed.exportedAs === "*") {
-            importedVariable = `* as ${defaultImportLexed.importedAs}`;
-          }
-
-          if (defaultImportLexed.exportedAs === "default") {
-            importedVariable = defaultImportLexed.importedAs;
-          }
-
           importStrings.push(
-            `import ${importedVariable} from "${importEntry.moduleName}";`
+            ImportsWritter.createImportLine({
+              importTarget: importEntry.moduleName,
+              defaultImportName: defaultImportLexed.importedAs,
+              starImport: defaultImportLexed.exportedAs === "*",
+            })
           );
         }
 
         for (const otherImportLexed of otherImportsLexed) {
-          importStrings.push(`import "${importEntry.moduleName}";`);
+          importStrings.push(
+            ImportsWritter.createImportLine({
+              importTarget: importEntry.moduleName,
+            })
+          );
         }
+
+        continue;
       }
 
       // If there is a rewrite, we need to create imports separately
@@ -79,28 +127,31 @@ export class ImportsWritter {
           importEntry.rewriteExportedAs || lexedImport.exportedAs;
 
         if (exportedVariable && ["default", "*"].includes(exportedVariable)) {
-          if (exportedVariable === "default") {
-            importedVariable = lexedImport.importedAs;
-          }
-
-          if (exportedVariable === "*") {
-            importedVariable = `* as ${lexedImport.importedAs}`;
-          }
-
           importStrings.push(
-            `import ${importedVariable} from "${importEntry.rewritePath}";`
+            ImportsWritter.createImportLine({
+              importTarget: importEntry.rewritePath,
+              defaultImportName: importedVariable,
+              starImport: exportedVariable === "*",
+            })
           );
           continue;
         }
         if (shouldAssumeToDefaultExportRewrite) {
           importStrings.push(
-            `import ${importedVariable} from "${importEntry.rewritePath}";`
+            ImportsWritter.createImportLine({
+              importTarget: importEntry.rewritePath,
+              defaultImportName: importedVariable,
+            })
           );
           continue;
         }
 
         if (!importedVariable && !exportedVariable) {
-          importStrings.push(`import "${importEntry.rewritePath}";`);
+          importStrings.push(
+            ImportsWritter.createImportLine({
+              importTarget: importEntry.rewritePath,
+            })
+          );
           continue;
         }
       }
